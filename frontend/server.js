@@ -19,6 +19,14 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files from current directory
 app.use(express.static(__dirname));
 
+// Proxy API requests to backend (port 8000)
+const proxy = require('express-http-proxy');
+app.use('/api', proxy('localhost:8000', {
+    proxyReqPathResolver: function (req) {
+        return '/api' + req.url;
+    }
+}));
+
 // Serve index.html for root
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
