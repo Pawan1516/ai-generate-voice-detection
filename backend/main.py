@@ -297,20 +297,25 @@ async def http_exception_handler(request, exc):
         content={"status": "error", "message": exc.detail}
     )
 
-# Wildcard route - serve static files from frontend directory (MUST BE LAST)
+# Wildcard route - serve index.html for root or missing routes
+@app.get("/")
 @app.get("/{file_path:path}")
-async def serve_static(file_path: str):
-    """Serve static files from frontend directory"""
+async def serve_frontend(file_path: str = ""):
+    """Unified frontend server: serves assets if they exist, otherwise index.html"""
+    if not file_path or file_path == "/":
+        file_path = "index.html"
+    
     full_path = os.path.join(frontend_path, file_path)
+    
     if os.path.isfile(full_path):
         return FileResponse(full_path)
-    # If file not found and it's index.html request, return it
-    if file_path == "" or file_path == "/":
-        index_file = os.path.join(frontend_path, "index.html")
-        if os.path.exists(index_file):
-            return FileResponse(index_file, media_type="text/html")
-    # Return 404 for missing files
-    raise HTTPException(status_code=404, detail="File not found")
+    
+    # For SPA routing: if file doesn't exist, serve index.html
+    index_file = os.path.join(frontend_path, "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+        
+    raise HTTPException(status_code=404, detail="Frontend assets not found")
 
 # Run the server
 if __name__ == "__main__":
