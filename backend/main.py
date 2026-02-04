@@ -140,10 +140,22 @@ async def detect_voice(request: VoiceDetectionRequest):
         # Decode and Load Audio once for all processors (CRITICAL FOR RAM ON RENDER)
         load_start = time.time()
         try:
+            # 1. Decode Base64
             audio_bytes = base64.b64decode(request.audioBase64)
-            # Use soundfile/librosa to load from bytes once
-            y, sr = librosa.load(io.BytesIO(audio_bytes), sr=16000)
-            logger.info(f"Audio loaded successfully: {len(y)} samples")
+            
+            # 2. CLEAR the large base64 string from memory immediately
+            request.audioBase64 = "" 
+            
+            # 3. Load from bytes (limit to 10s to prevent OOM on large files)
+            # Use 'kaiser_fast' for speed/memory efficiency on Render
+            y, sr = librosa.load(io.BytesIO(audio_bytes), sr=16000, duration=10, res_type='kaiser_fast')
+            
+            # 4. CLEAR the binary bytes now that we have the float array
+            audio_bytes = None
+            import gc
+            gc.collect() 
+            
+            logger.info(f"Audio loaded successfully: {len(y)} samples (10s max)")
         except Exception as e:
             logger.error(f"Audio loading failed: {str(e)}")
             raise HTTPException(status_code=400, detail=f"Failed to load audio: {str(e)}")
