@@ -1,1 +1,1 @@
-web: gunicorn backend.main:app -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 300 --workers 1
+web: uvicorn backend.main:app --host 0.0.0.0 --port $PORT --timeout-keep-alive 300 --limit-concurrency 1
