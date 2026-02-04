@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Detection</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="background-glow"></div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-wave-square"></i>
+                <span>AI<span class="highlight">Voice Detection</span></span>
+            </div>
+        </header>
+
+        <main>
+            <div class="glass-card main-card">
+                <h1>AI Voice Detection</h1>
+                <p class="subtitle">Securely analyze voice authenticity</p>
+
+                <!-- Input Controls -->
+                <div class="control-group">
+                    <label>API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="sk_test_..." class="text-input">
+                </div>
+
+                <div class="control-group">
+                    <label>Select Language</label>
+                    <div class="select-wrapper">
+                        <select id="languageSelect">
+                            <option value="" disabled selected>Choose language...</option>
+                            <option value="English">English (Global)</option>
+                            <option value="Tamil">Tamil (தமிழ்)</option>
+                            <option value="Hindi">Hindi (हिंदी)</option>
+                            <option value="Malayalam">Malayalam (മലയാളം)</option>
+                            <option value="Telugu">Telugu (తెలుగు)</option>
+                            <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                </div>
+
+                <!-- File Upload Section (Always Visible) -->
+                <div id="uploadSection" class="input-section active">
+                    <label>Upload Voice Sample</label>
+                    <div class="upload-area" id="dropZone">
+                        <input type="file" id="fileInput" accept=".mp3" hidden>
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <p>Click to upload or drag and drop MP3</p>
+                        <span class="file-limit">MP3 files only (max 15 seconds)</span>
+                    </div>
+                    <div id="fileInfo" class="hidden">
+                        <div class="file-badge">
+                            <i class="fa-solid fa-music"></i>
+                            <span id="fileName">sample.mp3</span>
+                            <button id="removeFileBtn" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Common Audio Preview -->
+                <div id="previewContainer" class="hidden">
+                    <audio id="audioPlayback" controls></audio>
+                </div>
+
+                <button id="detectBtn" class="btn action-btn" disabled>
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Voice
+                </button>
+            </div>
+
+            <!-- Result Overlay -->
+            <div id="resultOverlay" class="result-overlay hidden">
+                <div class="result-card">
+                    <button class="close-btn" onclick="closeResult()"><i class="fa-solid fa-xmark"></i></button>
+                    <div class="icon-wrapper" id="resultIcon"></div>
+                    <h2 id="resultTitle">Analyzing...</h2>
+                    <div class="confidence-meter">
+                        <div class="meter-bar">
+                            <div class="meter-fill" id="confidenceFill"></div>
+                        </div>
+                        <span id="confidenceValue">0%</span>
+                    </div>
+                    <p id="resultExplanation" class="explanation-text"></p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>AI voice Detection : 2026</p>
+        </footer>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

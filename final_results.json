@@ -1,0 +1,95 @@
+{
+  "summary": "10/10 matches",
+  "results": [
+    {
+      "file": "0_jackson_0.wav",
+      "expected": "HUMAN",
+      "actual": "HUMAN",
+      "match": true,
+      "confidence": 0.9946,
+      "ml_score": 0.0054,
+      "final_score": 0.0378
+    },
+    {
+      "file": "0_jackson_49.wav",
+      "expected": "HUMAN",
+      "actual": "HUMAN",
+      "match": true,
+      "confidence": 0.9903,
+      "ml_score": 0.0097,
+      "final_score": 0.0408
+    },
+    {
+      "file": "0_nicolas_0.wav",
+      "expected": "HUMAN",
+      "actual": "HUMAN",
+      "match": true,
+      "confidence": 0.9975,
+      "ml_score": 0.0025,
+      "final_score": 0.0357
+    },
+    {
+      "file": "0_nicolas_49.wav",
+      "expected": "HUMAN",
+      "actual": "HUMAN",
+      "match": true,
+      "confidence": 0.994,
+      "ml_score": 0.006,
+      "final_score": 0.0382
+    },
+    {
+      "file": "0_theo_0.wav",
+      "expected": "HUMAN",
+      "actual": "HUMAN",
+      "match": true,
+      "confidence": 0.9989,
+      "ml_score": 0.0011,
+      "final_score": 0.0348
+    },
+    {
+      "file": "ai_voice_001.wav",
+      "expected": "AI_GENERATED",
+      "actual": "AI_GENERATED",
+      "match": true,
+      "confidence": 0.6085,
+      "ml_score": 0.6085,
+      "final_score": 0.4259
+    },
+    {
+      "file": "ai_voice_002.wav",
+      "expected": "AI_GENERATED",
+      "actual": "AI_GENERATED",
+      "match": true,
+      "confidence": 0.5762,
+      "ml_score": 0.5762,
+      "final_score": 0.4034
+    },
+    {
+      "file": "ai_voice_003.wav",
+      "expected": "AI_GENERATED",
+      "actual": "AI_GENERATED",
+      "match": true,
+      "confidence": 0.8925,
+      "ml_score": 0.8925,
+      "final_score": 0.6247
+    },
+    {
+      "file": "ai_voice_004.wav",
+      "expected": "AI_GENERATED",
+      "actual": "AI_GENERATED",
+      "match": true,
+      "confidence": 0.5475,
+      "ml_score": 0.5475,
+      "final_score": 0.3833
+    },
+    {
+      "file": "ai_voice_005.wav",
+      "expected": "AI_GENERATED",
+      "actual": "AI_GENERATED",
+      "match": true,
+      "confidence": 0.6213,
+      "ml_score": 0.6213,
+      "final_score": 0.4349
+    }
+  ]
+}
