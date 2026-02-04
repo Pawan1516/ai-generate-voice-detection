@@ -1,4 +1,4 @@
-# Datasets & Audio
+# Datasets & Audio (Keep local)
 data/
 datasets/
 *.wav
@@ -9,13 +9,13 @@ datasets/
 *.ogg
 *.m4a
 
-# Models & Weights
-*.pt
-*.pkl
-*.h5
-*.pth
-*.onnx
-backend/models/
+# Models & Weights (Allowed by user request)
+# *.pt
+# *.pkl
+# *.h5
+# *.pth
+# *.onnx
+# backend/models/
 !backend/models/.gitkeep
 
 # Environment & Secrets
