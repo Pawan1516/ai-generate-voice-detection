@@ -10,14 +10,22 @@ import pickle
 import os
 import sys
 
-# Universal Import Fix for Deployment
+# Universal Import Fix for Deployment (Render Environment)
 backend_dir = os.path.dirname(os.path.abspath(__file__))
-if backend_dir not in sys.path:
-    sys.path.append(backend_dir)
+project_root = os.path.dirname(backend_dir)
+
+# Add both backend and root to path
+for path in [backend_dir, project_root]:
+    if path not in sys.path:
+        sys.path.append(path)
 
 from typing import Dict
 from io import BytesIO
-from audio_processor import AudioProcessor
+
+try:
+    from audio_processor import AudioProcessor
+except ImportError:
+    from backend.audio_processor import AudioProcessor
 
 class HybridVoiceDetector:
     """

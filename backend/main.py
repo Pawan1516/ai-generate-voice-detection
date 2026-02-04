@@ -14,15 +14,25 @@ import logging
 import time
 from typing import Optional
 
-# Universal Import Fix for Deployment
-# Adds current directory to sys.path so 'import config' etc works regardless of CWD
+# Universal Import Fix for Deployment (Render Environment)
 backend_dir = os.path.dirname(os.path.abspath(__file__))
-if backend_dir not in sys.path:
-    sys.path.append(backend_dir)
+project_root = os.path.dirname(backend_dir)
 
-from config import SUPPORTED_LANGUAGES, API_KEY, CLASSIFICATION_THRESHOLD, LANGUAGE_API_KEYS
-from audio_processor import AudioProcessor
-from hybrid_detector import HybridVoiceDetector
+# Add both backend and root to path
+for path in [backend_dir, project_root]:
+    if path not in sys.path:
+        sys.path.append(path)
+
+# Try relative/absolute imports for shared modules
+try:
+    from config import SUPPORTED_LANGUAGES, API_KEY, CLASSIFICATION_THRESHOLD, LANGUAGE_API_KEYS
+    from audio_processor import AudioProcessor
+    from hybrid_detector import HybridVoiceDetector
+except ImportError:
+    # Fallback if package structure is different
+    from backend.config import SUPPORTED_LANGUAGES, API_KEY, CLASSIFICATION_THRESHOLD, LANGUAGE_API_KEYS
+    from backend.audio_processor import AudioProcessor
+    from backend.hybrid_detector import HybridVoiceDetector
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -219,9 +229,8 @@ async def detect_voice(request: VoiceDetectionRequest):
             f"Confidence: {confidence_score:.2f} | "
             f"ML: {ml_score:.2f} | Artifacts: {artifact_score:.2f} | "
             f"Total: {total_time:.3f}s | "
-            f"Decode: {decode_time:.3f}s | "
+            f"Load+Decode: {load_time:.3f}s | "
             f"Silence: {silence_time:.3f}s | "
-            f"Features: {features_time:.3f}s | "
             f"Inference: {inference_time:.3f}s"
         )
         
