@@ -5,12 +5,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, validator
 import base64
+import os
+import sys
+import librosa
+import numpy as np
 import io
 import logging
 import time
 from typing import Optional
-import os
-import sys
 
 # Universal Import Fix for Deployment
 # Adds current directory to sys.path so 'import config' etc works regardless of CWD
