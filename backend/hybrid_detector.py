@@ -23,7 +23,7 @@ class HybridVoiceDetector:
     # Weights for fusion
     ML_WEIGHT = 0.7
     ARTIFACT_WEIGHT = 0.3
-    DECISION_THRESHOLD = 0.40  # Optimized for AI clone detection
+    DECISION_THRESHOLD = 0.65  # Standard hackathon threshold
     
     def __init__(self):
         """Load pre-trained model"""
