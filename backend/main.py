@@ -59,9 +59,18 @@ audio_processor = AudioProcessor()
 hybrid_detector = HybridVoiceDetector()
 
 # Mount static files (frontend) - serve CSS, JS, etc
-frontend_path = os.path.join(os.path.dirname(__file__), '..', 'frontend')
-if os.path.exists(frontend_path):
-    app.mount("/static", StaticFiles(directory=frontend_path), name="static")
+# Use absolute path resolution for reliability on Render
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+frontend_path = os.path.abspath(os.path.join(backend_dir, '..', 'frontend'))
+
+logger.info(f"Frontend path initialized at: {frontend_path}")
+if not os.path.exists(frontend_path):
+    logger.error(f"CRITICAL: Frontend directory not found at {frontend_path}")
+else:
+    # Mount internal assets directory if it exists
+    assets_path = os.path.join(frontend_path, 'assets')
+    if os.path.exists(assets_path):
+        app.mount("/assets", StaticFiles(directory=assets_path), name="assets")
 
 # Request model
 class VoiceDetectionRequest(BaseModel):
@@ -120,9 +129,31 @@ def verify_api_key(x_api_key: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
     return x_api_key
 
-# Health check endpoint (not used as root serves static files)
+# Diagnostic endpoint
+@app.get("/api/diag")
+def diagnostic():
+    """Diagnostic info for deployment troubleshooting"""
+    import numpy
+    import librosa
+    
+    files = []
+    if os.path.exists(frontend_path):
+        files = os.listdir(frontend_path)
+    
+    return {
+        "status": "online",
+        "frontend_path": frontend_path,
+        "frontend_exists": os.path.exists(frontend_path),
+        "frontend_files": files,
+        "numpy_version": numpy.__version__,
+        "librosa_version": librosa.__version__,
+        "cwd": os.getcwd(),
+        "backend_dir": backend_dir
+    }
+
+# Health check endpoint
 @app.get("/api/health")
-async def health():
+def health():
     """Health check endpoint"""
     return {
         "message": "AI Voice Detection API",
@@ -326,12 +357,12 @@ async def general_exception_handler(request, exc):
         content={"status": "error", "message": f"Server processing error: {str(exc)}"}
     )
 
-# Wildcard route - serve index.html for root or missing routes
-@app.get("/")
 @app.get("/{file_path:path}")
-async def serve_frontend(file_path: str = ""):
+def serve_frontend(file_path: str = ""):
     """Unified frontend server: serves assets if they exist, otherwise index.html"""
-    # Explicitly block API paths from being served as HTML (Prevents JSON parse errors)
+    logger.info(f"Catch-all router: Request for file_path='{file_path}'")
+    
+    # Explicitly block API paths from being served as HTML
     if file_path.startswith("api/"):
         from fastapi.responses import JSONResponse
         return JSONResponse(
@@ -340,19 +371,28 @@ async def serve_frontend(file_path: str = ""):
         )
         
     if not file_path or file_path == "/":
-        file_path = "index.html"
+        target_file = "index.html"
+    else:
+        target_file = file_path
     
-    full_path = os.path.join(frontend_path, file_path)
+    full_path = os.path.abspath(os.path.join(frontend_path, target_file))
     
+    # Security: Ensure full_path is inside frontend_path
+    if not full_path.startswith(frontend_path):
+        logger.warning(f"Security: Blocked attempt to access {full_path}")
+        raise HTTPException(status_code=403, detail="Forbidden")
+
     if os.path.isfile(full_path):
         return FileResponse(full_path)
     
-    # For SPA routing: if file doesn't exist, serve index.html
-    index_file = os.path.join(frontend_path, "index.html")
-    if os.path.exists(index_file):
-        return FileResponse(index_file)
+    # For SPA routing: if file doesn't exist AND it's not looking for a specific extension, serve index.html
+    if "." not in target_file:
+        index_file = os.path.join(frontend_path, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
         
-    raise HTTPException(status_code=404, detail="Frontend assets not found")
+    logger.warning(f"File not found: {full_path}")
+    raise HTTPException(status_code=404, detail=f"File '{target_file}' not found")
 
 # Run the server
 if __name__ == "__main__":
