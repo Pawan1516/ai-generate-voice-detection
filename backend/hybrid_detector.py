@@ -8,6 +8,13 @@ import numpy as np
 import librosa
 import pickle
 import os
+import sys
+
+# Universal Import Fix for Deployment
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.append(backend_dir)
+
 from typing import Dict
 from io import BytesIO
 from audio_processor import AudioProcessor

@@ -9,10 +9,18 @@ import io
 import logging
 import time
 from typing import Optional
+import os
+import sys
+
+# Universal Import Fix for Deployment
+# Adds current directory to sys.path so 'import config' etc works regardless of CWD
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.append(backend_dir)
+
 from config import SUPPORTED_LANGUAGES, API_KEY, CLASSIFICATION_THRESHOLD, LANGUAGE_API_KEYS
 from audio_processor import AudioProcessor
 from hybrid_detector import HybridVoiceDetector
-import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
