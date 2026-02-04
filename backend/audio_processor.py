@@ -75,8 +75,21 @@ class AudioProcessor:
                 return None
             
             # 1. Load 16kHz Mono
-            y, sr = librosa.load(BytesIO(audio_bytes), sr=16000, mono=True)
-            
+            try:
+                y, sr = librosa.load(BytesIO(audio_bytes), sr=16000, mono=True)
+            except Exception as e:
+                print(f"Librosa load failed, trying soundfile: {e}")
+                # Fallback to soundfile (sometimes more robust for specific formats)
+                try:
+                    data, sr_orig = sf.read(BytesIO(audio_bytes))
+                    if len(data.shape) > 1: # Stereo to Mono
+                        data = np.mean(data, axis=1)
+                    y = librosa.resample(data, orig_sr=sr_orig, target_sr=16000)
+                    sr = 16000
+                except Exception as sf_e:
+                    print(f"Soundfile load also failed: {sf_e}")
+                    raise Exception(f"Could not load audio: {sf_e}")
+
             # 2. Fixed Duration (4s = 64000 samples)
             target_len = 64000
             if len(y) > target_len:
