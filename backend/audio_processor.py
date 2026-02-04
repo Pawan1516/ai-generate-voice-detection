@@ -15,29 +15,13 @@ class AudioProcessor:
     def __init__(self, sr=16000):
         self.sr = sr
     
-    def detect_silence(self, audio_bytes, silence_threshold=0.01):
-        """
-        Detect if audio is mostly silence
-        
-        Args:
-            audio_bytes: Raw audio data
-            silence_threshold: RMS threshold below which is considered silence
-            
-        Returns:
-            tuple: (is_silent: bool, silence_percentage: float)
-        """
+    def detect_silence(self, audio_data, silence_threshold=0.01):
+        """Detect silence in pre-loaded audio array"""
         try:
-            # Load audio
-            y, sr = librosa.load(BytesIO(audio_bytes), sr=self.sr)
-            
+            y = audio_data
             # Calculate RMS energy
             rms = librosa.feature.rms(y=y)[0]
             
-            # Count silent frames (normalized RMS < threshold)
-            # Typically RMS is not normalized 0-1 easily without reference.
-            # But let's assume threshold is small (e.g., 0.01)
-            
-            # Normalize RMS to 0-1 roughly
             if np.max(rms) > 0:
                 rms_norm = rms / np.max(rms)
             else:
@@ -50,46 +34,19 @@ class AudioProcessor:
                 return True, 1.0
                 
             silence_percentage = silent_frames / total_frames
-            
-            # If > 80% silence, flag as silent
             is_silent = silence_percentage > 0.8
-            
             return is_silent, silence_percentage
             
         except Exception as e:
-            # Default to not silent on error
             print(f"Error in detect_silence: {e}")
             return False, 0.0
 
-    def extract_features(self, audio_bytes):
-        """
-        FIXED STANDARD PIPELINE:
-        1. Load as 16kHz mono
-        2. Trim/Pad to 4 seconds (64000 samples)
-        3. Mel Spectrogram (128 mels, 1024 n_fft)
-        4. Power to DB
-        5. Normalize
-        """
+    def extract_features(self, audio_data):
+        """Extract features from pre-loaded audio array"""
         try:
-            if audio_bytes is None or len(audio_bytes) == 0:
-                return None
+            y = audio_data
+            sr = 16000
             
-            # 1. Load 16kHz Mono
-            try:
-                y, sr = librosa.load(BytesIO(audio_bytes), sr=16000, mono=True)
-            except Exception as e:
-                print(f"Librosa load failed, trying soundfile: {e}")
-                # Fallback to soundfile (sometimes more robust for specific formats)
-                try:
-                    data, sr_orig = sf.read(BytesIO(audio_bytes))
-                    if len(data.shape) > 1: # Stereo to Mono
-                        data = np.mean(data, axis=1)
-                    y = librosa.resample(data, orig_sr=sr_orig, target_sr=16000)
-                    sr = 16000
-                except Exception as sf_e:
-                    print(f"Soundfile load also failed: {sf_e}")
-                    raise Exception(f"Could not load audio: {sf_e}")
-
             # 2. Fixed Duration (4s = 64000 samples)
             target_len = 64000
             if len(y) > target_len:

@@ -153,11 +153,14 @@ class HybridVoiceDetector:
             print(f"Artifact scoring failed: {e}")
             return 0.5  # Neutral default
     
-    def predict_hybrid(self, audio_bytes) -> Dict:
+    def predict_hybrid(self, audio_data, sr=16000) -> Dict:
         """
-        ✅ STEP 3: Fusion Scoring
-        Combines ML (70%) + Artifacts (30%)
+        AI Voice Detection using Fusion Scoring
         
+        Args:
+            audio_data: Pre-loaded librosa audio array
+            sr: Sample rate (default 16000)
+            
         Returns:
             classification: 'HUMAN' or 'AI_GENERATED'
             confidence: 0-1
@@ -165,27 +168,17 @@ class HybridVoiceDetector:
             reasoning: explanation for judges
         """
         try:
-            # Load and normalize audio
-            try:
-                # Use standard processor for loading/decoding
-                import librosa
-                y, sr = librosa.load(BytesIO(audio_bytes), sr=16000)
-            except Exception as e:
-                return {
-                    'classification': 'ERROR',
-                    'confidence': 0.0,
-                    'error': f'Failed to load audio: {e}'
-                }
+            y = audio_data
             
             if y is None or len(y) == 0:
                 return {
                     'classification': 'ERROR',
                     'confidence': 0.0,
-                    'error': 'Failed to load audio'
+                    'error': 'Input audio data is empty or invalid'
                 }
             
             # ========== ML SCORE ==========
-            features_dict = self.audio_processor.extract_features(audio_bytes)
+            features_dict = self.audio_processor.extract_features(y)
             
             if features_dict is None:
                 return {

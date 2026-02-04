@@ -135,52 +135,32 @@ async def detect_voice(request: VoiceDetectionRequest):
     try:
         logger.info(f"Processing voice detection request for language: {request.language}")
         
-        # Decode Base64 audio
-        decode_start = time.time()
+        # Decode and Load Audio once for all processors (CRITICAL FOR RAM ON RENDER)
+        load_start = time.time()
         try:
             audio_bytes = base64.b64decode(request.audioBase64)
+            # Use soundfile/librosa to load from bytes once
+            y, sr = librosa.load(io.BytesIO(audio_bytes), sr=16000)
+            logger.info(f"Audio loaded successfully: {len(y)} samples")
         except Exception as e:
-            logger.error(f"Base64 decoding failed: {str(e)}")
-            raise HTTPException(status_code=400, detail="Invalid Base64 audio data")
-        decode_time = time.time() - decode_start
+            logger.error(f"Audio loading failed: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Failed to load audio: {str(e)}")
+        load_time = time.time() - load_start
         
-        # Validate audio size
-        if len(audio_bytes) < 1000:
-            raise HTTPException(status_code=400, detail="Audio file too small or corrupted")
-        
-        if len(audio_bytes) > 15 * 1024 * 1024:  # 15MB limit
-            raise HTTPException(status_code=400, detail="Audio file too large (max 15MB)")
-        
-        # Check for silence (especially important for live recordings)
+        # Check for silence (using pre-loaded array)
         silence_start = time.time()
         try:
-            is_silent, silence_percentage = audio_processor.detect_silence(audio_bytes, silence_threshold=0.1)
+            is_silent, silence_percentage = audio_processor.detect_silence(y, silence_threshold=0.1)
             if is_silent:
                 logger.warning(f"Audio rejected: {silence_percentage:.1%} silence detected")
-                # For Demo: Log warning but PROCEED anyway
-                # raise HTTPException(
-                #     status_code=400, 
-                #     detail=f"Insufficient voice detected. Audio contains {silence_percentage:.0%} silence. Please record again with clear speech."
-                # )
-        except HTTPException:
-            raise
         except Exception as e:
-            logger.warning(f"Silence detection failed: {str(e)}, continuing anyway")
+            logger.warning(f"Silence detection failed: {str(e)}, continuing")
         silence_time = time.time() - silence_start
         
-        # Process audio and extract features (optimized: max 5 seconds)
-        features_start = time.time()
-        try:
-            features = audio_processor.extract_features(audio_bytes)
-        except Exception as e:
-            logger.error(f"Feature extraction failed: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Audio processing failed: {str(e)}")
-        features_time = time.time() - features_start
-        
-        # Run hybrid detection (ML + artifact analysis)
+        # Run hybrid detection (using pre-loaded array)
         inference_start = time.time()
         try:
-            result = hybrid_detector.predict_hybrid(audio_bytes)
+            result = hybrid_detector.predict_hybrid(y, sr=16000)
             
             if result.get('classification') == 'ERROR':
                 error_msg = result.get('error', 'Unknown error')
