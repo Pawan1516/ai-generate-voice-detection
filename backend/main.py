@@ -322,6 +322,14 @@ async def general_exception_handler(request, exc):
 @app.get("/{file_path:path}")
 async def serve_frontend(file_path: str = ""):
     """Unified frontend server: serves assets if they exist, otherwise index.html"""
+    # Explicitly block API paths from being served as HTML (Prevents JSON parse errors)
+    if file_path.startswith("api/"):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=404,
+            content={"status": "error", "message": f"API endpoint '/{file_path}' not found"}
+        )
+        
     if not file_path or file_path == "/":
         file_path = "index.html"
     
