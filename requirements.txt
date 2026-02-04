@@ -2,7 +2,7 @@ fastapi
 uvicorn
 gunicorn
 python-multipart
-numpy
+numpy<2.0.0
 scikit-learn
 librosa
 soundfile

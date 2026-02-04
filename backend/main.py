@@ -131,9 +131,9 @@ async def health():
         "supported_languages": SUPPORTED_LANGUAGES
     }
 
-# Main detection endpoint
+# Main detection endpoint - synchronous to avoid blocking event loop
 @app.post("/api/voice-detection", response_model=SuccessResponse)
-async def detect_voice(request: VoiceDetectionRequest):
+def detect_voice(request: VoiceDetectionRequest):
     """
     Voice detection endpoint with latency optimization
     
@@ -161,7 +161,8 @@ async def detect_voice(request: VoiceDetectionRequest):
             request.audioBase64 = "" 
             
             # 4. Load from bytes (limit to 10s to prevent OOM on large files)
-            y, sr = librosa.load(io.BytesIO(audio_bytes), sr=16000, duration=10, res_type='kaiser_fast')
+            # Use 'linear' resampling - LEAST RAM INTENSIVE (Critical for Render Free)
+            y, sr = librosa.load(io.BytesIO(audio_bytes), sr=16000, duration=10, res_type='linear')
             
             # 5. CLEAR the binary bytes now that we have the float array
             audio_bytes = None
