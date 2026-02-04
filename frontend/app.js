@@ -51,6 +51,11 @@ async function handleFile(file) {
         return;
     }
 
+    if (file.size > 5 * 1024 * 1024) {
+        showError("Audio file is too large! Maximum limit is 5MB for analysis to ensure speed and stability.");
+        return;
+    }
+
     fileNameDisplay.textContent = file.name;
     dropZone.classList.add('hidden');
     fileInfo.classList.remove('hidden');
